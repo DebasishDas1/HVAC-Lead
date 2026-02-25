@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, User, Bot, Loader2 } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Send, User, Bot, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +24,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, sessionId })
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isQualified, setIsQualified] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -38,13 +41,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, sessionId })
         if (scrollRef.current) {
             scrollRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [messages]);
+    }, [messages, isLoading]);
 
     const sendMessage = async () => {
         if (!input.trim() || isLoading || isQualified) return;
 
         const userMessage = input.trim();
         setInput('');
+        setError(null);
         setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
         setIsLoading(true);
 
@@ -61,73 +65,104 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, sessionId })
             setIsQualified(qualified);
         } catch (error) {
             console.error('Error sending message:', error);
-            setMessages((prev) => [
-                ...prev,
-                { role: 'assistant', content: "I'm sorry, I'm having trouble connecting to the server. Please check if the backend is running." }
-            ]);
+            setError("Connection issue. Please ensure the backend server is running.");
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="flex items-center justify-center min-h-[90vh] px-4 py-8">
-            <Card className="w-full max-w-2xl h-[700px] flex flex-col shadow-2xl border-2 border-slate-200">
-                <CardHeader className="bg-slate-900 text-white rounded-t-lg">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
-                            <Bot size={24} className="text-blue-400" />
+        <div className="flex animate-in fade-in duration-1000 items-center justify-center min-h-[80vh] px-4 py-4">
+            <Card className="w-full max-w-3xl h-[750px] flex flex-col shadow-2xl border-none ring-1 ring-primary/5 overflow-hidden">
+                <CardHeader className="border-b bg-background/50 backdrop-blur-sm py-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 border-2 border-primary/10 shadow-sm">
+                                <AvatarFallback className="bg-primary text-primary-foreground">
+                                    <Bot size={20} />
+                                </AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <CardTitle className="text-lg font-bold">HVAC Assistant</CardTitle>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                    </span>
+                                    <span className="text-xs font-medium text-muted-foreground">Expert Support Online</span>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <CardTitle className="text-xl">HVAC Specialist</CardTitle>
-                            <p className="text-xs text-slate-400 flex items-center gap-1">
-                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                Online - Ready to help
-                            </p>
-                        </div>
+                        {isQualified && (
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1 px-3 py-1">
+                                <Sparkles size={12} /> Qualified
+                            </Badge>
+                        )}
                     </div>
                 </CardHeader>
 
-                <CardContent className="flex-1 overflow-hidden p-0 bg-slate-50">
-                    <ScrollArea className="h-full p-6">
-                        <div className="space-y-6">
+                <CardContent className="flex-1 overflow-hidden p-0 bg-gradient-to-b from-transparent to-primary/[0.02]">
+                    <ScrollArea className="h-full px-6 py-8">
+                        <div className="space-y-8 pb-4">
                             {messages.map((msg, i) => (
                                 <div
                                     key={i}
                                     className={cn(
-                                        "flex w-full items-start gap-3",
+                                        "flex w-full items-start gap-3 animate-in slide-in-from-bottom-2 duration-300",
                                         msg.role === 'user' ? "flex-row-reverse" : "flex-row"
                                     )}
                                 >
-                                    <div className={cn(
-                                        "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1",
-                                        msg.role === 'user' ? "bg-slate-200" : "bg-blue-100"
+                                    <Avatar className={cn(
+                                        "h-8 w-8 mt-1 border shadow-sm",
+                                        msg.role === 'user' ? "bg-white" : "bg-primary"
                                     )}>
-                                        {msg.role === 'user' ? <User size={16} className="text-slate-600" /> : <Bot size={16} className="text-blue-600" />}
-                                    </div>
+                                        {msg.role === 'user' ? (
+                                            <AvatarFallback className="bg-white text-muted-foreground"><User size={14} /></AvatarFallback>
+                                        ) : (
+                                            <AvatarFallback className="bg-primary text-primary-foreground"><Bot size={14} /></AvatarFallback>
+                                        )}
+                                    </Avatar>
                                     <div className={cn(
-                                        "max-w-[80%] rounded-2xl p-4 text-sm shadow-sm",
+                                        "relative group max-w-[85%] rounded-2xl p-4 text-sm transition-all duration-200",
                                         msg.role === 'user'
-                                            ? "bg-slate-900 font-medium text-white rounded-tr-none"
-                                            : "bg-white text-slate-800 rounded-tl-none border border-slate-200"
+                                            ? "bg-primary text-primary-foreground shadow-md rounded-tr-none"
+                                            : "bg-white text-foreground shadow-sm border border-border/50 rounded-tl-none hover:border-primary/20"
                                     )}>
-                                        {msg.content}
+                                        <p className="leading-relaxed">{msg.content}</p>
                                     </div>
                                 </div>
                             ))}
+
                             {isLoading && (
-                                <div className="flex w-full items-start gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-1">
-                                        <Bot size={16} className="text-blue-600" />
-                                    </div>
-                                    <div className="bg-white text-slate-800 max-w-[80%] rounded-2xl p-4 text-sm shadow-sm border border-slate-200 rounded-tl-none">
-                                        <Loader2 size={16} className="animate-spin text-slate-400" />
+                                <div className="flex w-full items-start gap-3 animate-pulse">
+                                    <Avatar className="h-8 w-8 mt-1 border bg-primary shadow-sm">
+                                        <AvatarFallback className="bg-primary text-primary-foreground"><Bot size={14} /></AvatarFallback>
+                                    </Avatar>
+                                    <div className="bg-white text-foreground max-w-[85%] rounded-2xl p-4 text-sm shadow-sm border border-border/50 rounded-tl-none flex items-center gap-2">
+                                        <Loader2 size={14} className="animate-spin text-primary" />
+                                        <span className="text-muted-foreground italic">Thinking...</span>
                                     </div>
                                 </div>
                             )}
+
+                            {error && (
+                                <div className="flex justify-center animate-in zoom-in-95 duration-300">
+                                    <div className="bg-destructive/10 text-destructive text-xs py-2 px-4 rounded-full border border-destructive/20 flex items-center gap-2">
+                                        <AlertCircle size={14} />
+                                        {error}
+                                    </div>
+                                </div>
+                            )}
+
                             {isQualified && (
-                                <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-center font-medium animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                    ✅ Your session is complete. Our team will contact you shortly!
+                                <div className="space-y-4 px-4 py-6 bg-green-50/50 border border-green-100 rounded-3xl text-center animate-in zoom-in-95 duration-500">
+                                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 mb-2">
+                                        <Sparkles className="h-6 w-6" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-green-900">Great News!</h3>
+                                    <p className="text-sm text-green-700 max-w-sm mx-auto">
+                                        Your session is complete and you've been qualified. A team member will reach out to you within the next hour.
+                                    </p>
                                 </div>
                             )}
                             <div ref={scrollRef} />
@@ -135,22 +170,26 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, sessionId })
                     </ScrollArea>
                 </CardContent>
 
-                <CardFooter className="p-4 bg-white border-t rounded-b-lg">
-                    <div className="flex w-full gap-2 items-center">
+                <CardFooter className="p-4 bg-background border-t">
+                    <div className="flex w-full gap-2 items-center bg-muted/50 p-1.5 rounded-2xl ring-1 ring-border/50 focus-within:ring-primary/30 transition-all duration-300">
                         <Input
-                            placeholder={isQualified ? "Session complete" : "Describe your HVAC issue..."}
+                            placeholder={isQualified ? "Session complete" : "Describe your heating or cooling issue..."}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                             disabled={isLoading || isQualified}
-                            className="flex-1 py-6 border-slate-200 focus:ring-slate-400"
+                            className="flex-1 border-none bg-transparent shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/70"
                         />
                         <Button
                             onClick={sendMessage}
                             disabled={isLoading || isQualified || !input.trim()}
-                            className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl p-6"
+                            size="icon"
+                            className={cn(
+                                "h-11 w-11 rounded-xl shadow-lg transition-all duration-300",
+                                !input.trim() ? "opacity-50 grayscale" : "bg-primary hover:scale-105"
+                            )}
                         >
-                            <Send size={20} />
+                            <Send size={18} />
                         </Button>
                     </div>
                 </CardFooter>

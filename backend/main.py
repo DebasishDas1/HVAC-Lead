@@ -3,8 +3,8 @@ import uuid
 from typing import Dict
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .models import ChatRequest, ChatResponse, HVACState
-from .graph import graph
+from models import ChatRequest, ChatResponse, HVACState
+from graph import graph
 
 app = FastAPI(title="HVAC Lead Qualification API")
 

@@ -1,5 +1,5 @@
 import asyncio
-from ..models import Lead
+from models import Lead
 
 async def save_lead_mock(lead: Lead):
     """Mock function to simulate saving to Google Sheets or CRM."""

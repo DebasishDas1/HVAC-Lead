@@ -1,17 +1,17 @@
 import os
 from typing import List
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
-from .models import LLMStructuredOutput
+from models import LLMStructuredOutput
 
 load_dotenv()
 
 # Initialize the LLM
-# You can use "gpt-4o" or a faster model like "gpt-4o-mini"
-llm = ChatOpenAI(
-    model="gpt-4o-mini",
-    api_key=os.getenv("OPENAI_API_KEY"),
+# You can use "gemini-1.5-pro" or "gemini-1.5-flash"
+llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash",
+    google_api_key=os.getenv("GOOGLE_API_KEY"),
     temperature=0
 )
 

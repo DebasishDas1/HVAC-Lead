@@ -20,7 +20,6 @@ __pycache__/
 *.so
 
 .venv/
-.env
 venv/
 ENV/
 env/
@@ -116,3 +115,9 @@ temp/
 *.tmp
 *.bak
 *.swp
+############################
+# 🧪 SCRATCH / DEBUG
+############################
+backend/test_gemini.py
+backend/scripts/test_gemini*
+scripts/test_llm.py

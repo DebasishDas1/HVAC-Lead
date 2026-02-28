@@ -1,22 +1,28 @@
 import os
 from typing import List
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from models import LLMStructuredOutput
+from langchain_groq import ChatGroq
 
 load_dotenv()
 
-# Initialize the LLM
-# You can use "gemini-1.5-pro" or "gemini-1.5-flash"
-llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash",
-    google_api_key=os.getenv("GOOGLE_API_KEY"),
+# Initialize LLM2 (Ollama)
+llm2 = ChatOllama(
+    model="qwen3:1.7b",
+    temperature=0,
+)
+
+llm3 = ChatGroq(
+    model="llama-3.1-8b-instant",
+    groq_api_key=os.getenv("GROQ_API_KEY"),
     temperature=0
 )
 
 # Bind structured output
-structured_llm = llm.with_structured_output(LLMStructuredOutput)
+structured_llm2 = llm2.with_structured_output(LLMStructuredOutput)
+structured_llm3 = llm3.with_structured_output(LLMStructuredOutput)
 
 SYSTEM_PROMPT = """
 You are a professional, empathetic HVAC service coordinator. 
@@ -44,15 +50,20 @@ Otherwise, keep qualified: false.
 """
 
 def get_llm_response(name: str, messages: List[dict]) -> LLMStructuredOutput:
-    """Sends messages to LLM and returns structured response."""
-    
-    # Format messages for LangChain
-    formatted_messages = [SystemMessage(content=SYSTEM_PROMPT.format(name=name))]
-    
+
+    formatted_messages = [
+        HumanMessage(content=SYSTEM_PROMPT.format(name=name))
+    ]
+
     for msg in messages:
         if msg["role"] == "user":
             formatted_messages.append(HumanMessage(content=msg["content"]))
         else:
             formatted_messages.append(AIMessage(content=msg["content"]))
-            
-    return structured_llm.invoke(formatted_messages)
+
+    try:
+        return structured_llm3.invoke(formatted_messages)
+
+    except Exception as e:
+        print("⚠️ Gemini failed, falling back to Ollama:", e)
+        return structured_llm3.invoke(formatted_messages)

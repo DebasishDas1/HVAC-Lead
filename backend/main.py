@@ -60,7 +60,7 @@ async def chat_endpoint(request: ChatRequest):
     
     try:
         # Run the graph
-        final_output = graph.invoke(initial_state)
+        final_output = await graph.ainvoke(initial_state)
         
         # Update session data
         sessions[session_id]["messages"] = final_output["messages"]

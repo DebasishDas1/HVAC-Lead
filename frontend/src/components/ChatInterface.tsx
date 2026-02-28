@@ -19,6 +19,25 @@ interface ChatInterfaceProps {
     sessionId: string;
 }
 
+const Typewriter = ({ text, onComplete }: { text: string; onComplete?: () => void }) => {
+    const [displayedText, setDisplayedText] = useState('');
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        if (currentIndex < text.length) {
+            const timeout = setTimeout(() => {
+                setDisplayedText((prev) => prev + text[currentIndex]);
+                setCurrentIndex((prev) => prev + 1);
+            }, 15); // Adjust speed here
+            return () => clearTimeout(timeout);
+        } else if (onComplete) {
+            onComplete();
+        }
+    }, [currentIndex, text, onComplete]);
+
+    return <p className="leading-relaxed">{displayedText}</p>;
+};
+
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, sessionId }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -39,7 +58,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, sessionId })
 
     useEffect(() => {
         if (scrollRef.current) {
-            scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+            // Use block: 'nearest' to prevent the entire page from jumping
+            scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }, [messages, isLoading]);
 
@@ -128,7 +148,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, sessionId })
                                             ? "bg-primary text-primary-foreground shadow-md rounded-tr-none"
                                             : "bg-white text-foreground shadow-sm border border-border/50 rounded-tl-none hover:border-primary/20"
                                     )}>
-                                        <p className="leading-relaxed">{msg.content}</p>
+                                        {msg.role === 'assistant' && i === messages.length - 1 ? (
+                                            <Typewriter text={msg.content} />
+                                        ) : (
+                                            <p className="leading-relaxed">{msg.content}</p>
+                                        )}
                                     </div>
                                 </div>
                             ))}

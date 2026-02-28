@@ -1,27 +1,97 @@
-# Python (Backend)
+############################
+# 🔐 ENV & SECRETS
+############################
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets.*
+config.local.*
+backend/.env
+frontend/.env
+
+############################
+# 🐍 PYTHON (FastAPI)
+############################
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+
 .venv/
+.env
 venv/
 ENV/
 env/
-.env
+
 .pytest_cache/
 .coverage
 htmlcov/
-*.swp
-*.bak
+.mypy_cache/
+.dmypy.json
+.pyre/
 
-# Node (Frontend)
+*.sqlite3
+*.db
+
+############################
+# ⚙️ UV / Poetry / Pip
+############################
+.uv/
+.poetry/
+poetry.lock
+
+############################
+# 🟢 NODE / REACT
+############################
+node_modules/
 frontend/node_modules/
-frontend/dist/
-frontend/dist-ssr/
-frontend/*.local
-frontend/.env*
-!frontend/.env.example
 
-# OS / IDE
+dist/
+build/
+frontend/dist/
+frontend/build/
+frontend/dist-ssr/
+
+.next/
+out/
+
+*.tsbuildinfo
+
+############################
+# 🧠 LANGCHAIN / AI
+############################
+*.faiss
+*.pkl
+*.pickle
+*.joblib
+*.pt
+*.onnx
+*.bin
+chroma/
+.vectorstore/
+
+############################
+# 🧪 TEST / COVERAGE
+############################
+coverage/
+.nyc_output/
+
+############################
+# 🗂 LOGS
+############################
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+############################
+# 💻 OS / IDE
+############################
 .DS_Store
 .vscode/
 !.vscode/extensions.json
@@ -32,11 +102,17 @@ frontend/.env*
 *.sln
 *.sw?
 
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+############################
+# 🐳 DOCKER
+############################
+docker-compose.override.yml
+
+############################
+# 🧱 BUILD / CACHE
+############################
+.cache/
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp

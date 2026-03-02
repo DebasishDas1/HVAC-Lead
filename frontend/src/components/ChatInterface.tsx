@@ -73,7 +73,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, sessionId })
         setIsLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:8000/chat', {
+            const response = await axios.post('http://localhost:8000/evac_lead_chat', {
                 sessionId,
                 user,
                 message: userMessage

@@ -14,3 +14,9 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     qualified: bool
+
+class QualificationResult(BaseModel):
+    reply: str
+    problem: Optional[str] = None
+    urgency: Optional[str] = None
+    property_type: Optional[str] = None

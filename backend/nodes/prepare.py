@@ -3,7 +3,7 @@ from schemas.state import WorkflowState
 
 async def prepare_lead_context(state: WorkflowState) -> WorkflowState:
     """
-    Node 1 — Format raw LeadData into a readable context string for the LLM.
+    Format raw LeadData into a readable context string for the LLM.
     """
     lead = state["lead"]
 

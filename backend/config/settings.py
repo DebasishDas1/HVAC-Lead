@@ -31,6 +31,9 @@ class Settings:
     POLL_INTERVAL_SECONDS: int  = int(os.getenv("POLL_INTERVAL_SECONDS", "60"))
     MAX_CONCURRENT_LEADS: int   = int(os.getenv("MAX_CONCURRENT_LEADS", "5"))
 
+    # Chat
+    MAX_TOKEN: int = int(os.getenv("MAX_TOKEN", "200"))
+
     def validate(self):
         """Warn if required keys are missing, but allow mock mode for development."""
         required_critical = {

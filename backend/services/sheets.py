@@ -15,12 +15,15 @@ from schemas.score import LeadScore
 class SheetsClient:
     """Handles all Google Sheets read/write operations asynchronously."""
 
+    def _safe_tab_name(self, tab: str) -> str:
+        """Wrap any tab name safely for Google Sheets range usage."""
+        if re.search(r"[^a-zA-Z0-9]", tab):
+            return f"'{tab}'"
+        return tab
+
     def _safe_tab(self) -> str:
-        """Wrap tab name safely for Google Sheets range usage."""
-        # Quote if it contains spaces or special characters
-        if re.search(r"[^a-zA-Z0-9]", self.tab):
-            return f"'{self.tab}'"
-        return self.tab
+        """Wrap the default tab name safely."""
+        return self._safe_tab_name(self.tab)
 
     def __init__(self):
         self.sheet_id = settings.GOOGLE_SHEETS_ID
@@ -186,6 +189,64 @@ class SheetsClient:
         )
 
         logger.info(f"Sheet row {lead.row_number} updated — {score.priority_level} ({score.lead_score}/100)")
+
+    async def append_lead_to_tab(self, lead: LeadData, score: LeadScore, tab_name: str):
+        """Append a new lead and its score to the end of a specific tab."""
+        if self.mock_mode:
+            logger.info(f"MOCK MODE: Skipping real sheet append to '{tab_name}' for '{lead.name}'")
+            return
+
+        headers = await self._get_headers_for_tab(tab_name)
+        priority_labels = {"HOT": "HOT 🔥", "WARM": "WARM ⚠️", "COLD": "COLD ❄️"}
+
+        field_map = {
+            "name": lead.name,
+            "email": lead.email,
+            "phone": lead.phone,
+            "budget": lead.budget,
+            "timeline": lead.timeline,
+            "property_type": lead.property_type,
+            "location": lead.location,
+            "authority": lead.authority,
+            "financing": lead.financing,
+            "lead_score": str(score.lead_score),
+            "priority_level": priority_labels[score.priority_level],
+            "recommended_action": score.recommended_action,
+            "agent_notes": score.agent_notes,
+            "follow_up_timing": score.follow_up_timing,
+            "disqualification_flags": ", ".join(score.disqualification_flags),
+            "scored_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+        }
+
+        # Build the row values based on header order
+        row_values = []
+        for h in headers:
+            row_values.append(field_map.get(h, ""))
+
+        body = {
+            "values": [row_values]
+        }
+
+        await anyio.to_thread.run_sync(
+            lambda: self.sheets.values().append(
+                spreadsheetId=self.sheet_id,
+                range=f"{self._safe_tab_name(tab_name)}!A:A",
+                valueInputOption="RAW",
+                insertDataOption="INSERT_ROWS",
+                body=body
+            ).execute()
+        )
+
+        logger.info(f"Lead '{lead.name}' appended to '{tab_name}' — {score.priority_level}")
+
+    async def _get_headers_for_tab(self, tab_name: str) -> list[str]:
+        """Fetch headers for a specific tab."""
+        rows = await self._get_values(f"{self._safe_tab_name(tab_name)}!1:1")
+        if not rows:
+            logger.warning(f"No headers found in tab '{tab_name}'")
+            return ["name", "email", "phone", "lead_score", "priority_level", "scored_at"]
+
+        return [h.lower().strip().replace(" ", "_").replace("-", "_") for h in rows[0]]
 
     def _get_column_letter(self, index: int) -> str:
         """Convert a 0-indexed column number to a Google Sheets column letter (A, B, ..., Z, AA, ...)."""

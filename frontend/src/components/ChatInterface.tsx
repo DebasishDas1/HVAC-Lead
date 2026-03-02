@@ -183,9 +183,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, sessionId })
                                     <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 mb-2">
                                         <Sparkles className="h-6 w-6" />
                                     </div>
-                                    <h3 className="text-lg font-bold text-green-900">Great News!</h3>
+                                    <h3 className="text-lg font-bold text-green-900">Thank you!</h3>
                                     <p className="text-sm text-green-700 max-w-sm mx-auto">
-                                        Your session is complete and you've been qualified. A team member will reach out to you within the next hour.
+                                        Our team member will reach out to you shortly.
                                     </p>
                                 </div>
                             )}

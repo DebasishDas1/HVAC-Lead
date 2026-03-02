@@ -2,7 +2,8 @@ from config.settings import logger
 from schemas.state import WorkflowState
 
 async def log_completion(state: WorkflowState) -> WorkflowState:
-    """Node 5 — Log the final processing summary."""
+    """Log the final processing summary."""
+    
     lead  = state["lead"]
     score = state["score_result"]
 
